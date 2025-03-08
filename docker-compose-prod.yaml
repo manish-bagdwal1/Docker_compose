@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  ml_api:
+    image: sirvaiys/ml_api:latest  # Pull prebuilt image
+    container_name: ml_api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - train_model
+      - postgres
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+
+  train_model:
+    image: sirvaiys/train_model:latest  # Pull prebuilt image
+    container_name: train_model
+    volumes:
+      - model_data:/model
+    restart: "no"
+
+  postgres:
+    image: postgres:13
+    container_name: postgres_db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ml_user
+      POSTGRES_PASSWORD: hARfRt5z7jv7DR8
+      POSTGRES_DB: ml_logs
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  model_data:
+  db_data:

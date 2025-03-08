@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  train_model:
+    build: ./train
+    container_name: train_model # your image name should be same as service name
+    volumes:  
+      - model_data:/model # store your model folder
+    restart: "no"  # Runs once and exits
+
+  ml_api:
+    build: ./api
+    container_name: ml_api
+    ports:
+      - "8002:8002"
+    depends_on:     # tell sequence in which it should run this ml_api service
+      - train_model
+      - postgres
+    volumes:
+      - model_data:/model
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+
+  postgres: # no build here as we are using imgae already
+    image: postgres:13  # Uses official PostgreSQL image
+    container_name: postgres_db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ml_user
+      POSTGRES_PASSWORD: your_strong_password
+      POSTGRES_DB: ml_logs
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  model_data:
+  db_data:
